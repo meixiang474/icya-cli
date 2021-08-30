@@ -2,10 +2,14 @@
 
 const path = require("path");
 const pkgDir = require("pkg-dir").sync;
+const pathExists = require("path-exists").sync;
 const { isObject } = require("@icya-cli/utils");
 const formatPath = require("@icya-cli/format-path");
 const npminstall = require("npminstall");
-const { getDefaultRegistry } = require("@icya-cli/get-npm-info");
+const {
+  getDefaultRegistry,
+  getNpmLatestVersion,
+} = require("@icya-cli/get-npm-info");
 
 class Package {
   constructor(options) {
@@ -23,13 +27,44 @@ class Package {
     this.packageName = options.packageName;
     // 远程 package 的version
     this.packageVersion = options.packageVersion;
+    // 远程包的缓存前缀 如 @icya-cli_init
+    this.cacheFilePathPrefix = this.packageName.replace("/", "_");
   }
+
+  // 远程包前处理
+  async prepare() {
+    // 将 latest 版本转换成具体的版本
+    if (this.packageVersion === "latest") {
+      this.packageVersion = await getNpmLatestVersion(this.packageName);
+    }
+  }
+
+  // 远程包缓存下来自身的路径 如 /usr/xxx/.icya-cli/dependencies/node_modules/_@icya-cli_init@1.0.4@@icya-cli/init
+  get cacheFilePath() {
+    return path.resolve(
+      this.storeDir,
+      `_${this.cacheFilePathPrefix}@${this.packageVersion}@${this.packageName}`
+    );
+  }
+
   // 判断当前Package是否存在
-  exists() {}
+  async exists() {
+    // 使用远程命令包时
+    if (this.storeDir) {
+      // 远程包前处理
+      await this.prepare();
+      return pathExists(this.cacheFilePath);
+    } else {
+      // 使用本地命令包时, 直接检测本地包路径是否存在
+      return pathExists(this.targetPath);
+    }
+  }
 
   // 安装Package
-  install() {
-    npminstall({
+  async install() {
+    // 远程包前处理
+    await this.prepare();
+    return npminstall({
       // 执行目录
       root: this.targetPath,
       // 存锤目录
