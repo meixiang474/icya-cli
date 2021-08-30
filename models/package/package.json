@@ -1,0 +1,36 @@
+{
+  "name": "@icya-cli/package",
+  "version": "1.0.3",
+  "description": "icya-cli package",
+  "author": "meixiang474 <1436098850@qq.com>",
+  "homepage": "https://github.com/meixiang474/icya-cli#readme",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meixiang474/icya-cli.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/meixiang474/icya-cli/issues"
+  },
+  "dependencies": {
+    "@icya-cli/get-npm-info": "file:../../utils/get-npm-info",
+    "@icya-cli/format-path": "file:../../utils/format-path",
+    "@icya-cli/utils": "file:../../utils/utils",
+    "npminstall": "^4.11.0",
+    "pkg-dir": "^5.0.0"
+  }
+}
