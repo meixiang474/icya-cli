@@ -49,7 +49,7 @@ async function exec() {
     });
     if (await pkg.exists()) {
       // 更新远程包
-      console.log("test");
+      await pkg.update();
     } else {
       // 安装远程包
       await pkg.install();
