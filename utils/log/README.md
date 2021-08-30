@@ -1,11 +1,11 @@
-# `core`
+# `@icya-cli/log`
 
 > TODO: description
 
 ## Usage
 
 ```
-const core = require('core');
+const log = require('@icya-cli/log');
 
 // TODO: DEMONSTRATE API
 ```
