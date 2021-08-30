@@ -7,13 +7,18 @@ const colors = require("colors/safe");
 const semver = require("semver");
 const userHome = require("user-home");
 const pathExists = require("path-exists").sync;
+const commander = require("commander");
 const log = require("@icya-cli/log");
+const init = require("@icya-cli/init");
 
 const constant = require("./const");
 const pkg = require("../package.json");
 
 // 参数对象 {debug: true}
-let args;
+// let args;
+
+// 实例化脚手架对象
+const program = new commander.Command();
 
 // 入口函数
 async function core() {
@@ -26,15 +31,62 @@ async function core() {
     checkRoot();
     // 检查本机用户主目录
     checkUserHome();
-    // 检查入参
-    checkInputArgs();
+    // 检查入参 后续改成用program解析参数
+    //  checkInputArgs();
     // 初始化环境变量
     checkEnv();
     // 检查脚手架更新
     await checkGlobalUpdate();
+    registerCommand();
   } catch (e) {
     // 只打印message,不打印stack
     log.error(e.message);
+  }
+}
+
+// 注册命令
+function registerCommand() {
+  // 配置program
+  program
+    .name(Object.keys(pkg.bin)[0])
+    .usage("<command> [options]")
+    .version(pkg.version)
+    .option("-d, --debug", "是否开启调试模式", false);
+
+  // 注册init命令
+  program
+    .command("init [projectName]")
+    .option("-f --force", "是否强制初始化项目", false)
+    .action(init);
+
+  // 是否开启调试模式
+  program.on("option:debug", () => {
+    if (program.debug) {
+      process.env.LOG_LEVEL = "verbose";
+    } else {
+      process.env.LOG_LEVEL = "info";
+    }
+    // 动态修改log level
+    log.level = process.env.LOG_LEVEL;
+  });
+
+  // 对未知命令进行监听
+  program.on("command:*", (obj) => {
+    // 取出注册命令名称
+    const availableCommands = program.commands.map((cmd) => cmd.name());
+    console.log(colors.red("未知命令：" + obj[0]));
+    if (availableCommands.length > 0) {
+      console.log(colors.red("可用命令：" + availableCommands.join(",")));
+    }
+  });
+
+  // 解析参数
+  program.parse(process.argv);
+
+  // 如果用户没有输入命令,输出帮助文档
+  if (program.args && program.args.length < 1) {
+    program.outputHelp();
+    console.log();
   }
 }
 
@@ -86,24 +138,24 @@ function createDefaultConfig() {
 }
 
 // 检查入参
-function checkInputArgs() {
-  const minimist = require("minimist");
-  // 获取参数  {debug: true}
-  args = minimist(process.argv.slice(2));
-  // 校验参数
-  checkArgs();
-}
+// function checkInputArgs() {
+//   const minimist = require("minimist");
+//   // 获取参数  {debug: true}
+//   args = minimist(process.argv.slice(2));
+//   // 校验参数
+//   checkArgs();
+// }
 
-function checkArgs() {
-  // 检查是否是debug模式
-  if (args.debug || args.d) {
-    process.env.LOG_LEVEL = "verbose";
-  } else {
-    process.env.LOG_LEVEL = "info";
-  }
-  // 后置修改log level
-  log.level = process.env.LOG_LEVEL;
-}
+// function checkArgs() {
+//   // 检查是否是debug模式
+//   if (args.debug || args.d) {
+//     process.env.LOG_LEVEL = "verbose";
+//   } else {
+//     process.env.LOG_LEVEL = "info";
+//   }
+//   // 后置修改log level
+//   log.level = process.env.LOG_LEVEL;
+// }
 
 // 检查本机用户目录
 function checkUserHome() {
