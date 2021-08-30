@@ -1,6 +1,6 @@
 {
   "name": "@icya-cli/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "icya-cli core",
   "author": "meixiang474 <1436098850@qq.com>",
   "homepage": "",
@@ -23,6 +23,6 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@icya-cli/utils": "^1.0.2"
+    "@icya-cli/utils": "^1.0.3"
   }
 }
