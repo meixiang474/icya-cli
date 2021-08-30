@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-const log = require('..');
+const log = require("..");
 
-describe('@icya-cli/log', () => {
-    it('needs tests');
+describe("@icya-cli/log", () => {
+  it("needs tests");
 });

@@ -2,6 +2,7 @@
 
 module.exports = core;
 
+const path = require("path");
 const colors = require("colors/safe");
 const semver = require("semver");
 const userHome = require("user-home");
@@ -11,8 +12,11 @@ const log = require("@icya-cli/log");
 const constant = require("./const");
 const pkg = require("../package.json");
 
+// 参数对象 {debug: true}
+let args;
+
 // 入口函数
-function core() {
+async function core() {
   try {
     // 检查脚手架版本号
     checkPkgVersion();
@@ -22,10 +26,83 @@ function core() {
     checkRoot();
     // 检查本机用户主目录
     checkUserHome();
+    // 检查入参
+    checkInputArgs();
+    // 初始化环境变量
+    checkEnv();
+    // 检查脚手架更新
+    await checkGlobalUpdate();
   } catch (e) {
     // 只打印message,不打印stack
     log.error(e.message);
   }
+}
+
+// 检查脚手架更新
+async function checkGlobalUpdate() {
+  // 1. 获取当前版本号和模块名
+  const currentVersion = pkg.version;
+  const npmName = pkg.name;
+  // 2. 调用npm api获取最新版本号
+  const { getNpmSemverVersion } = require("@icya-cli/get-npm-info");
+  const lastVersion = await getNpmSemverVersion(currentVersion, npmName);
+  if (lastVersion && semver.gt(lastVersion, currentVersion)) {
+    log.warn(
+      colors.yellow(
+        `请手动更新 ${npmName}, 当前版本：${currentVersion}，最新版本：${lastVersion}
+          更新命令：npm install -g ${npmName}`
+      )
+    );
+  }
+}
+// 初始化环境变量
+function checkEnv() {
+  const dotenv = require("dotenv");
+  const dotenvPath = path.resolve(userHome, ".env");
+  // 如果用户主目录下存在.env
+  if (pathExists(dotenvPath)) {
+    // 读取用户主目录下的.env文件
+    dotenv.config({
+      path: dotenvPath,
+    });
+  }
+  // 创建默认环境变量
+  createDefaultConfig();
+  // 默认{cliHome: /user/xxx/.icya-cli}
+  log.verbose("环境变量", "CLI_HOME_PATH", process.env.CLI_HOME_PATH);
+}
+
+// 创建默认环境变量
+function createDefaultConfig() {
+  const cliConfig = {
+    home: userHome,
+  };
+  if (process.env.CLI_HOME) {
+    cliConfig.cliHome = path.join(userHome, process.env.CLI_HOME);
+  } else {
+    cliConfig.cliHome = path.join(userHome, constant.DEFAULT_CLI_HOME);
+  }
+  process.env.CLI_HOME_PATH = cliConfig.cliHome;
+}
+
+// 检查入参
+function checkInputArgs() {
+  const minimist = require("minimist");
+  // 获取参数  {debug: true}
+  args = minimist(process.argv.slice(2));
+  // 校验参数
+  checkArgs();
+}
+
+function checkArgs() {
+  // 检查是否是debug模式
+  if (args.debug || args.d) {
+    process.env.LOG_LEVEL = "verbose";
+  } else {
+    process.env.LOG_LEVEL = "info";
+  }
+  // 后置修改log level
+  log.level = process.env.LOG_LEVEL;
 }
 
 // 检查本机用户目录

@@ -4,12 +4,26 @@
   "description": "icya-cli",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "prettier --write ./core/**/*.js ./models/**/*.js ./utils/**/*.js ./commands/**/*.js",
+    "commitlint": "commitlint -e"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "@commitlint/cli": "^13.1.0",
+    "@commitlint/config-conventional": "^13.1.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.32.0",
+    "eslint-config-alloy": "^4.2.0",
+    "eslint-config-prettier": "^8.3.0",
+    "lerna": "^4.0.0",
+    "prettier": "^2.3.2",
+    "simple-git-hooks": "^2.6.1"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npm run lint",
+    "commit-msg": "npm run commitlint"
   }
 }

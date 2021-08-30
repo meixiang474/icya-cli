@@ -1,0 +1,16 @@
+{
+  "root": true,
+  "parser": "babel-eslint",
+  "extends": ["alloy", "prettier"],
+  "env": {
+    "es6": true,
+    "commonjs": true,
+    "node": true
+  },
+  "rules": {
+    "indent": ["error", 2],
+    "no-eq-null": "off",
+    "eqeqeq": "off",
+    "strict": "off"
+  }
+}
