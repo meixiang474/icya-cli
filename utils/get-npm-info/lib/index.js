@@ -56,12 +56,22 @@ function getNpmSemverVersions(baseVersion, versions) {
     .sort((a, b) => semver.gt(b, a));
 }
 
-// 获取包的最新版本
+// 获取包的最新版本(相对于某个包)
 async function getNpmSemverVersion(baseVersion, npmName, registry) {
   const versions = await getNpmVersions(npmName, registry);
   const newVersions = getNpmSemverVersions(baseVersion, versions);
   if (newVersions && newVersions.length > 0) {
     return newVersions[0];
+  }
+  return null;
+}
+
+// 获取包最新版本
+async function getNpmLatestVersion(npmName, registry) {
+  let versions = await getNpmVersions(npmName, registry);
+  // 将versions 从新到旧排序
+  if (versions) {
+    return versions.sort((a, b) => semver.gt(b, a))[0];
   }
   return null;
 }
@@ -72,4 +82,5 @@ module.exports = {
   getNpmSemverVersions,
   getNpmSemverVersion,
   getDefaultRegistry,
+  getNpmLatestVersion,
 };

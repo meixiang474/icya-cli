@@ -12,7 +12,7 @@ const SETTINGS = {
 // 远程包的缓存文件夹
 const CACHE_DIR = "dependencies";
 
-function exec() {
+async function exec() {
   // 获取用户传进来的targetPath
   let targetPath = process.env.CLI_TARGET_PATH;
   // 获取homePath, 默认为/user/xxx/.icya-cli
@@ -34,9 +34,9 @@ function exec() {
 
   if (!targetPath) {
     // targetPath不存在，说明要使用远程的包，生成缓存路径
-    // /usr/xxx/.icya-cli/dependencies
+    // 执行npminstall的目录 /usr/xxx/.icya-cli/dependencies
     targetPath = path.resolve(homePath, CACHE_DIR);
-    // /usr/xxx/.icya-cli/dependencies/node_modules
+    // 缓存远程包所在的目录 /usr/xxx/.icya-cli/dependencies/node_modules
     storeDir = path.resolve(targetPath, "node_modules");
     log.verbose("targetPath", targetPath);
     log.verbose("storeDir", storeDir);
@@ -47,11 +47,12 @@ function exec() {
       packageName,
       packageVersion,
     });
-    if (pkg.exists()) {
+    if (await pkg.exists()) {
       // 更新远程包
+      console.log("test");
     } else {
       // 安装远程包
-      pkg.install();
+      await pkg.install();
     }
   } else {
     // targetPath存在，使用本地命令包
@@ -64,8 +65,10 @@ function exec() {
   }
   // 命令包入口文件
   const rootFile = pkg.getRootFilePath();
-  // 执行对应命令包
-  require(rootFile).apply(null, arguments);
+  if (rootFile) {
+    // 执行对应命令包
+    require(rootFile).apply(null, arguments);
+  }
 }
 
 module.exports = exec;

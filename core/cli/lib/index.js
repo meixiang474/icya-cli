@@ -26,6 +26,10 @@ async function core() {
   } catch (e) {
     // 只打印message,不打印stack
     log.error(e.message);
+    // debug模式下打印完整错误
+    if (program.debug) {
+      console.log(e);
+    }
   }
 }
 
