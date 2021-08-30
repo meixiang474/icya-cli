@@ -30,6 +30,7 @@
     "@icya-cli/format-path": "file:../../utils/format-path",
     "@icya-cli/get-npm-info": "file:../../utils/get-npm-info",
     "@icya-cli/utils": "file:../../utils/utils",
+    "fs-extra": "^10.0.0",
     "npminstall": "^4.11.0",
     "path-exists": "^4.0.0",
     "pkg-dir": "^5.0.0"

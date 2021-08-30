@@ -1,6 +1,7 @@
 "use strict";
 
 const path = require("path");
+const fse = require("fs-extra");
 const pkgDir = require("pkg-dir").sync;
 const pathExists = require("path-exists").sync;
 const { isObject } = require("@icya-cli/utils");
@@ -33,6 +34,10 @@ class Package {
 
   // 远程包前处理
   async prepare() {
+    // 使用远程包，但是远程包缓存路径还未创建, 那么将缓存目录创建出来
+    if (this.storeDir && !pathExists(this.storeDir)) {
+      fse.mkdirpSync(this.storeDir);
+    }
     // 将 latest 版本转换成具体的版本
     if (this.packageVersion === "latest") {
       this.packageVersion = await getNpmLatestVersion(this.packageName);
@@ -44,6 +49,14 @@ class Package {
     return path.resolve(
       this.storeDir,
       `_${this.cacheFilePathPrefix}@${this.packageVersion}@${this.packageName}`
+    );
+  }
+
+  // 获取指定版本的远程包的缓存路径
+  getSpecificCacheFilePath(packageVersion) {
+    return path.resolve(
+      this.storeDir,
+      `_${this.cacheFilePathPrefix}@${packageVersion}@${this.packageName}`
     );
   }
 
@@ -76,7 +89,25 @@ class Package {
   }
 
   // 更新Package
-  update() {}
+  async update() {
+    await this.prepare();
+    // 1. 获取最新的远程包版本号
+    const latestPackageVersion = await getNpmLatestVersion(this.packageName);
+    // 2. 查看最新的包是否存在
+    const latestFilePath = this.getSpecificCacheFilePath(latestPackageVersion);
+    // 3. 如果不存在安装最新版本
+    if (!pathExists(latestFilePath)) {
+      return npminstall({
+        // 执行目录
+        root: this.targetPath,
+        // 存锤目录
+        storeDir: this.storeDir,
+        // 默认是淘宝源
+        registry: getDefaultRegistry(),
+        pkgs: [{ name: this.packageName, version: latestPackageVersion }],
+      });
+    }
+  }
 
   // 获取入口文件路径
   getRootFilePath() {
