@@ -1,2 +1,9 @@
+commands/**/*.test.js
+models/**/*.test.js
+utils/**/*.test.js
+core/**/*.test.js
+commands/**/node_modules
+models/**/node_modules
+utils/**/node_modules
+core/**/node_modules
 node_modules
-__test__

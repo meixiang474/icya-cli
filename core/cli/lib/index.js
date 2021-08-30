@@ -10,12 +10,10 @@ const pathExists = require("path-exists").sync;
 const commander = require("commander");
 const log = require("@icya-cli/log");
 const init = require("@icya-cli/init");
+const exec = require("@icya-cli/exec");
 
 const constant = require("./const");
 const pkg = require("../package.json");
-
-// 参数对象 {debug: true}
-// let args;
 
 // 实例化脚手架对象
 const program = new commander.Command();
@@ -23,20 +21,7 @@ const program = new commander.Command();
 // 入口函数
 async function core() {
   try {
-    // 检查脚手架版本号
-    checkPkgVersion();
-    // 检查node版本号
-    checkNodeVersion();
-    // 检查root账户
-    checkRoot();
-    // 检查本机用户主目录
-    checkUserHome();
-    // 检查入参 后续改成用program解析参数
-    //  checkInputArgs();
-    // 初始化环境变量
-    checkEnv();
-    // 检查脚手架更新
-    await checkGlobalUpdate();
+    await prepare();
     registerCommand();
   } catch (e) {
     // 只打印message,不打印stack
@@ -51,13 +36,14 @@ function registerCommand() {
     .name(Object.keys(pkg.bin)[0])
     .usage("<command> [options]")
     .version(pkg.version)
-    .option("-d, --debug", "是否开启调试模式", false);
+    .option("-d, --debug", "是否开启调试模式", false)
+    .option("-tp, --targetPath <targetPath>", "是否指定本地文件路径", "");
 
-  // 注册init命令
+  // 注册init命令, 命令使用exec模块来调度
   program
     .command("init [projectName]")
     .option("-f --force", "是否强制初始化项目", false)
-    .action(init);
+    .action(exec);
 
   // 是否开启调试模式
   program.on("option:debug", () => {
@@ -68,6 +54,11 @@ function registerCommand() {
     }
     // 动态修改log level
     log.level = process.env.LOG_LEVEL;
+  });
+
+  // 监听targetPath, 将其挂在环境变量上
+  program.on("option:targetPath", () => {
+    process.env.CLI_TARGET_PATH = program.targetPath;
   });
 
   // 对未知命令进行监听
@@ -88,6 +79,22 @@ function registerCommand() {
     program.outputHelp();
     console.log();
   }
+}
+
+// 脚手架准备阶段
+async function prepare() {
+  // 检查脚手架版本号
+  checkPkgVersion();
+  // 检查node版本号
+  checkNodeVersion();
+  // 检查root账户
+  checkRoot();
+  // 检查本机用户主目录
+  checkUserHome();
+  // 初始化环境变量
+  checkEnv();
+  // 检查脚手架更新
+  await checkGlobalUpdate();
 }
 
 // 检查脚手架更新
@@ -119,9 +126,8 @@ function checkEnv() {
     });
   }
   // 创建默认环境变量
-  createDefaultConfig();
   // 默认{cliHome: /user/xxx/.icya-cli}
-  log.verbose("环境变量", "CLI_HOME_PATH", process.env.CLI_HOME_PATH);
+  createDefaultConfig();
 }
 
 // 创建默认环境变量
@@ -136,26 +142,6 @@ function createDefaultConfig() {
   }
   process.env.CLI_HOME_PATH = cliConfig.cliHome;
 }
-
-// 检查入参
-// function checkInputArgs() {
-//   const minimist = require("minimist");
-//   // 获取参数  {debug: true}
-//   args = minimist(process.argv.slice(2));
-//   // 校验参数
-//   checkArgs();
-// }
-
-// function checkArgs() {
-//   // 检查是否是debug模式
-//   if (args.debug || args.d) {
-//     process.env.LOG_LEVEL = "verbose";
-//   } else {
-//     process.env.LOG_LEVEL = "info";
-//   }
-//   // 后置修改log level
-//   log.level = process.env.LOG_LEVEL;
-// }
 
 // 检查本机用户目录
 function checkUserHome() {

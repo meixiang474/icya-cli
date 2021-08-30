@@ -1,7 +1,10 @@
 "use strict";
 
-module.exports = utils;
-
-function utils() {
-  // TODO
+// 判断是否是对象类型
+function isObject(o) {
+  return Object.prototype.toString.call(o) === "[object Object]";
 }
+
+module.exports = {
+  isObject,
+};

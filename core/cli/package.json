@@ -23,6 +23,7 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
+    "@icya-cli/exec": "file:../exec",
     "@icya-cli/init": "file:../../commands/init",
     "@icya-cli/get-npm-info": "file:../../utils/get-npm-info",
     "@icya-cli/log": "file:../../utils/log",
@@ -31,7 +32,6 @@
     "commander": "^6.2.1",
     "dotenv": "^10.0.0",
     "import-local": "^3.0.2",
-    "minimist": "^1.2.5",
     "npmlog": "^5.0.0",
     "path-exists": "^4.0.0",
     "root-check": "^1.0.0",
