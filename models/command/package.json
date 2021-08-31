@@ -1,7 +1,7 @@
 {
-  "name": "@icya-cli/init",
+  "name": "@icya-cli/command",
   "version": "1.0.6",
-  "description": "icya-cli init",
+  "description": "icya-cli command",
   "author": "meixiang474 <1436098850@qq.com>",
   "homepage": "https://github.com/meixiang474/icya-cli#readme",
   "license": "ISC",
@@ -27,7 +27,8 @@
     "url": "https://github.com/meixiang474/icya-cli/issues"
   },
   "dependencies": {
-    "@icya-cli/command": "file:../../models/command",
-    "@icya-cli/log": "file:../../utils/log"
+    "@icya-cli/log": "file:../../utils/log",
+    "colors": "^1.4.0",
+    "semver": "^7.3.5"
   }
 }

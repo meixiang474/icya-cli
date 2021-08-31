@@ -97,7 +97,7 @@ class Package {
     const latestFilePath = this.getSpecificCacheFilePath(latestPackageVersion);
     // 3. 如果不存在安装最新版本
     if (!pathExists(latestFilePath)) {
-      return npminstall({
+      await npminstall({
         // 执行目录
         root: this.targetPath,
         // 存锤目录
@@ -106,23 +106,35 @@ class Package {
         registry: getDefaultRegistry(),
         pkgs: [{ name: this.packageName, version: latestPackageVersion }],
       });
+      // 更新packageVersion到最新
+      this.packageVersion = latestPackageVersion;
     }
   }
 
   // 获取入口文件路径
   getRootFilePath() {
-    // 1. 获取package.json所在目录
-    const dir = pkgDir(this.targetPath);
-    if (dir) {
-      // 2. 读取package.json
-      const pkgFile = require(path.resolve(dir, "package.json"));
-      // 3. 寻找main
-      if (pkgFile && pkgFile.main) {
-        // 4. resolve出入口文件路径， 并兼容windows
-        return formatPath(path.resolve(dir, pkgFile.main));
+    const _getRootFile = (targetPath) => {
+      // 1. 获取package.json所在目录
+      const dir = pkgDir(targetPath);
+      if (dir) {
+        // 2. 读取package.json
+        const pkgFile = require(path.resolve(dir, "package.json"));
+        // 3. 寻找main
+        if (pkgFile && pkgFile.main) {
+          // 4. resolve出入口文件路径， 并兼容windows
+          return formatPath(path.resolve(dir, pkgFile.main));
+        }
       }
+      return null;
+    };
+
+    if (this.storeDir) {
+      // 使用远程缓存包的情况
+      return _getRootFile(this.cacheFilePath);
+    } else {
+      // 执行本地命令包的情况
+      return _getRootFile(this.targetPath);
     }
-    return null;
   }
 }
 

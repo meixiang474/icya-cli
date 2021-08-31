@@ -1,5 +1,6 @@
 "use strict";
 
+const cp = require("child_process");
 const path = require("path");
 const Package = require("@icya-cli/package");
 const log = require("@icya-cli/log");
@@ -64,11 +65,70 @@ async function exec() {
     });
   }
   // 命令包入口文件
-  const rootFile = pkg.getRootFilePath();
+  const rootFile = pkg.getRootFilePath({
+    targetPath,
+    storeDir,
+    packageName,
+    packageVersion,
+  });
+
   if (rootFile) {
-    // 执行对应命令包
-    require(rootFile).apply(null, arguments);
+    // exec是在一个新的promise中执行，cli的外层捕获不到异常
+    try {
+      // 执行对应命令包
+      // require(rootFile)(Array.from(arguments));
+
+      // 简化 cmdObj, 去掉原型属性和内置属性和parent
+      const args = Array.from(arguments);
+      const cmd = args[args.length - 1];
+      const o = Object.create(null);
+      Object.keys(cmd).forEach((key) => {
+        if (
+          cmd.hasOwnProperty(key) &&
+          !key.startsWith("_") &&
+          key !== "parent"
+        ) {
+          o[key] = cmd[key];
+        }
+      });
+      args[args.length - 1] = o;
+
+      // 拼接执行代码
+      const code = `require('${rootFile}').call(null, ${JSON.stringify(args)})`;
+
+      // 启用子进程执行命令包
+      const child = spawn("node", ["-e", code], {
+        // 指定工作目录为当前命令执行目录
+        cwd: process.cwd(),
+        // 将子进程的消息显示在父进程上
+        stdio: "inherit",
+      });
+      // 命令执行失败监听
+      child.on("error", (e) => {
+        log.error(e.message);
+        process.exit(1);
+      });
+      // 命令执行成功
+      child.on("exit", (e) => {
+        log.verbose("命令执行成功：" + e);
+        process.exit(e);
+      });
+    } catch (e) {
+      log.error(e.message);
+    }
   }
+}
+
+// 兼容 windows 执行命令
+function spawn(command, args, options) {
+  // 判断平台是否是 windows
+  const win32 = process.platform === "win32";
+  // windows 只能用cmd执行命令
+  const cmd = win32 ? "cmd" : command;
+  // windows 的参数必须有/c
+  const cmdArgs = win32 ? ["/c"].concat(command, args) : args;
+
+  return cp.spawn(cmd, cmdArgs, options || {});
 }
 
 module.exports = exec;

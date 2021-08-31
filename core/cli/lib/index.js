@@ -89,8 +89,6 @@ function registerCommand() {
 async function prepare() {
   // 检查脚手架版本号
   checkPkgVersion();
-  // 检查node版本号
-  checkNodeVersion();
   // 检查root账户
   checkRoot();
   // 检查本机用户主目录
@@ -159,17 +157,6 @@ function checkUserHome() {
 function checkRoot() {
   const rootCheck = require("root-check");
   rootCheck();
-}
-
-// 检查node版本号
-function checkNodeVersion() {
-  // 获取当前node版本号
-  const currentVersion = process.version;
-  // 比对版本号, 如果不满足最低版本号则抛出异常
-  const lowestVersion = constant.LOWEST_NODE_VERSION;
-  if (!semver.gte(currentVersion, lowestVersion)) {
-    throw new Error(colors.red(`icya-cli 需要安装 v${lowestVersion} Node.js`));
-  }
 }
 
 // 检查脚手架版本号
