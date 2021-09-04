@@ -28,6 +28,15 @@
   },
   "dependencies": {
     "@icya-cli/command": "file:../../models/command",
-    "@icya-cli/log": "file:../../utils/log"
+    "@icya-cli/log": "file:../../utils/log",
+    "@icya-cli/package": "file:../../models/package",
+    "@icya-cli/request": "file:../../utils/request",
+    "@icya-cli/utils": "file:../../utils/utils",
+    "ejs": "^3.1.6",
+    "fs-extra": "^10.0.0",
+    "glob": "^7.1.7",
+    "inquirer": "^8.1.2",
+    "kebab-case": "^1.0.1",
+    "semver": "^7.3.5"
   }
 }

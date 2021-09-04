@@ -9,7 +9,6 @@ const userHome = require("user-home");
 const pathExists = require("path-exists").sync;
 const commander = require("commander");
 const log = require("@icya-cli/log");
-const init = require("@icya-cli/init");
 const exec = require("@icya-cli/exec");
 
 const constant = require("./const");

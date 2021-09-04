@@ -36,6 +36,7 @@ class Command {
         log.error(e.message);
       });
     });
+    log.verbose("runner", runner);
   }
 
   // 参数初始化

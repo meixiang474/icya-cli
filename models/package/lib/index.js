@@ -106,9 +106,9 @@ class Package {
         registry: getDefaultRegistry(),
         pkgs: [{ name: this.packageName, version: latestPackageVersion }],
       });
-      // 更新packageVersion到最新
-      this.packageVersion = latestPackageVersion;
     }
+    // 更新packageVersion到最新
+    this.packageVersion = latestPackageVersion;
   }
 
   // 获取入口文件路径

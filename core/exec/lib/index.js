@@ -1,9 +1,9 @@
 "use strict";
 
-const cp = require("child_process");
 const path = require("path");
 const Package = require("@icya-cli/package");
 const log = require("@icya-cli/log");
+const { exec: spawn } = require("@icya-cli/utils");
 
 // 命令 -> 包 映射表
 const SETTINGS = {
@@ -120,15 +120,5 @@ async function exec() {
 }
 
 // 兼容 windows 执行命令
-function spawn(command, args, options) {
-  // 判断平台是否是 windows
-  const win32 = process.platform === "win32";
-  // windows 只能用cmd执行命令
-  const cmd = win32 ? "cmd" : command;
-  // windows 的参数必须有/c
-  const cmdArgs = win32 ? ["/c"].concat(command, args) : args;
-
-  return cp.spawn(cmd, cmdArgs, options || {});
-}
 
 module.exports = exec;
