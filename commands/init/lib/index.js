@@ -306,12 +306,14 @@ class InitCommand extends Command {
       // 用户传入--force 则不需要问询
       if (!this.force) {
         // 1.1 询问是否继续创建
-        ifContinue = await inquirer.prompt({
-          type: "confirm",
-          name: "ifContinue",
-          default: false,
-          message: "当前文件夹不为空，是否继续创建项目",
-        }).ifContinue;
+        ifContinue = (
+          await inquirer.prompt({
+            type: "confirm",
+            name: "ifContinue",
+            default: false,
+            message: "当前文件夹不为空，是否继续创建项目",
+          })
+        ).ifContinue;
 
         // 不继续创建流程直接终止
         if (!ifContinue) return;

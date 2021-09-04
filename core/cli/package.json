@@ -25,7 +25,6 @@
   "dependencies": {
     "@icya-cli/exec": "file:../exec",
     "@icya-cli/get-npm-info": "file:../../utils/get-npm-info",
-    "@icya-cli/init": "file:../../commands/init",
     "@icya-cli/log": "file:../../utils/log",
     "@icya-cli/utils": "file:../../utils/utils",
     "colors": "^1.4.0",
