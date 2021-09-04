@@ -71,7 +71,7 @@ class InitCommand extends Command {
         // 自定义安装
         await this.installCustomTemplate();
       } else {
-        throw new Error("");
+        throw new Error("无法识别模版类型！");
       }
     } else {
       throw new Error("项目模版信息不存在！");
@@ -180,7 +180,8 @@ class InitCommand extends Command {
 
     // ejs模版渲染
     // ejs忽略的文件夹
-    const ignore = ["node_modules/**", "public/**"];
+    const templateIgnore = this.templateInfo.ignore || [];
+    const ignore = ["**/node_modules/**", ...templateIgnore];
     await this.ejsRender({ ignore });
 
     const { installCommand, startCommand } = this.templateInfo;
@@ -198,7 +199,37 @@ class InitCommand extends Command {
   }
 
   // 安装自定义模版
-  async installCustomTemplate() {}
+  async installCustomTemplate() {
+    // 查寻自定义模版的入口文件
+    if (await this.templateNpm.exists()) {
+      const rootFile = this.templateNpm.getRootFilePath();
+      if (fs.existsSync(rootFile)) {
+        log.notice("开始执行自定义模版");
+
+        const sourcePath = path.resolve(
+          this.templateNpm.cacheFilePath,
+          "template"
+        );
+
+        const options = {
+          templateInfo: this.templateInfo,
+          projectInfo: this.projectInfo,
+          targetPath: process.cwd(),
+          sourcePath,
+        };
+
+        const code = `require('${rootFile}')(${JSON.stringify(options)})`;
+        log.verbose("code", code);
+        await execAsync("node", ["-e", code], {
+          stdio: "inherit",
+          cwd: process.cwd(),
+        });
+        log.success("自定义模版安装成功");
+      } else {
+        throw new Error("自定义模版入口文件不存在");
+      }
+    }
+  }
 
   // 下载模版
   async downloadTemplate() {
@@ -337,65 +368,76 @@ class InitCommand extends Command {
       ],
     });
     log.verbose("type", type);
-    if (type === TYPE_PROJECT) {
-      // 2. 获取项目的基本信息
-      const projectNamePrompt = {
+
+    const title = type === TYPE_PROJECT ? "项目" : "组件";
+
+    // 根据 type 过滤获取到的模版
+    this.template = this.template.filter((template) => {
+      return template.tag.includes(type);
+    });
+
+    // 2. 获取项目的基本信息
+    const projectNamePrompt = {
+      type: "input",
+      name: "projectName",
+      message: `请输入${title}名称`,
+      default: "",
+      validate(v) {
+        // 1. 输入首字符必须为英文字符
+        // 2. 尾字符必须为英文或数字
+        // 3.字符仅允许 - _
+        // a-b a1-b1 a1-b1_c1
+        const done = this.async();
+        setTimeout(() => {
+          if (!isValidName(v)) {
+            done(`请输入合法的${title}名称！`);
+            return;
+          }
+          done(null, true);
+        }, 0);
+      },
+      filter(v) {
+        return v;
+      },
+    };
+    const projectPrompt = [
+      {
         type: "input",
-        name: "projectName",
-        message: "请输入项目名称",
-        default: "",
+        name: "projectVersion",
+        message: `请输入${title}版本号`,
+        default: "1.0.0",
         validate(v) {
-          // 1. 输入首字符必须为英文字符
-          // 2. 尾字符必须为英文或数字
-          // 3.字符仅允许 - _
-          // a-b a1-b1 a1-b1_c1
           const done = this.async();
           setTimeout(() => {
-            if (!isValidName(v)) {
-              done("请输入合法的项目名称！");
+            if (!semver.valid(v)) {
+              done(`请输入合法的${title}版本号！`);
+              return;
             }
             done(null, true);
           }, 0);
         },
         filter(v) {
-          return v;
+          // semver不合法时会返回null, 所以先做一次判断
+          if (semver.valid(v)) {
+            return semver.valid(v);
+          } else {
+            return v;
+          }
         },
-      };
-      const projectPrompt = [
-        {
-          type: "input",
-          name: "projectVersion",
-          message: "请输入项目版本号",
-          default: "1.0.0",
-          validate(v) {
-            const done = this.async();
-            setTimeout(() => {
-              if (!semver.valid(v)) {
-                done("请输入合法的项目名称！");
-              }
-              done(null, true);
-            }, 0);
-          },
-          filter(v) {
-            // semver不合法时会返回null, 所以先做一次判断
-            if (semver.valid(v)) {
-              return semver.valid(v);
-            } else {
-              return v;
-            }
-          },
-        },
-        {
-          type: "list",
-          name: "projectTemplate",
-          message: "请选择项目模版",
-          choices: this.createTemplateChoice(),
-        },
-      ];
-      // 如果 init 的是不合法名称才需要选择名称
-      if (!isProjectNameValid) {
-        projectPrompt.unshift(projectNamePrompt);
-      }
+      },
+      {
+        type: "list",
+        name: "projectTemplate",
+        message: `请选择${title}模版`,
+        choices: this.createTemplateChoice(),
+      },
+    ];
+    // 如果 init 的是不合法名称才需要选择名称
+    if (!isProjectNameValid) {
+      projectPrompt.unshift(projectNamePrompt);
+    }
+
+    if (type === TYPE_PROJECT) {
       const project = await inquirer.prompt(projectPrompt);
       projectInfo = {
         ...projectInfo,
@@ -403,6 +445,31 @@ class InitCommand extends Command {
         ...project,
       };
     } else if (type === TYPE_COMPONENT) {
+      // 组件的创建过程中，要填入描述信息
+      const descriptionPrompt = {
+        type: "input",
+        name: "componentDescription",
+        message: "请输入组件描述信息",
+        default: "",
+        validate(v) {
+          const done = this.async();
+          setTimeout(() => {
+            if (!v) {
+              done("请输入组件描述信息");
+              return;
+            }
+            done(null, true);
+          }, 0);
+        },
+      };
+      projectPrompt.push(descriptionPrompt);
+      // 获取组件的基本信息
+      const component = await inquirer.prompt(projectPrompt);
+      projectInfo = {
+        ...projectInfo,
+        type,
+        ...component,
+      };
     }
 
     // 生成项目名称 className AbcAbc -> abc-abc
@@ -415,6 +482,10 @@ class InitCommand extends Command {
     // 添加version字段，适配模版
     if (projectInfo.projectVersion) {
       projectInfo.version = projectInfo.projectVersion;
+    }
+    // 添加description字段
+    if (projectInfo.componentDescription) {
+      projectInfo.description = projectInfo.componentDescription;
     }
     return projectInfo;
   }
