@@ -1,6 +1,7 @@
 .vscode
 .idea
 node_modules
+.DS_Store
 
 core/**/node_modules
 commands/**/node_modules
