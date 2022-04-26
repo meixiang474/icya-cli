@@ -48,6 +48,8 @@ function registerCommand() {
     .option("-f --force", "是否强制初始化项目", false)
     .action(exec);
 
+  program.command("publish").action(exec);
+
   // 是否开启调试模式
   program.on("option:debug", () => {
     if (program.debug) {
