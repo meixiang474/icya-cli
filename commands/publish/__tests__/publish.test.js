@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-const publish = require('..');
+const publish = require("..");
 
-describe('publish', () => {
-    it('needs tests');
+describe("publish", () => {
+  it("needs tests");
 });
