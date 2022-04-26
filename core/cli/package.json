@@ -23,10 +23,10 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@icya-cli/exec": "file:../exec",
-    "@icya-cli/get-npm-info": "file:../../utils/get-npm-info",
-    "@icya-cli/log": "file:../../utils/log",
-    "@icya-cli/utils": "file:../../utils/utils",
+    "@icya-cli/exec": "^2.0.0",
+    "@icya-cli/get-npm-info": "^2.0.0",
+    "@icya-cli/log": "^2.0.0",
+    "@icya-cli/utils": "^2.0.0",
     "colors": "^1.4.0",
     "commander": "^6.2.1",
     "dotenv": "^10.0.0",
@@ -36,5 +36,6 @@
     "root-check": "^1.0.0",
     "semver": "^7.3.5",
     "user-home": "^3.0.0"
-  }
+  },
+  "gitHead": "e4166981b4a9093c0b62016387076dd513d9335f"
 }

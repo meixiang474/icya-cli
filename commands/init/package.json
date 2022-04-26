@@ -27,16 +27,17 @@
     "url": "https://github.com/meixiang474/icya-cli/issues"
   },
   "dependencies": {
-    "@icya-cli/command": "file:../../models/command",
-    "@icya-cli/log": "file:../../utils/log",
-    "@icya-cli/package": "file:../../models/package",
-    "@icya-cli/request": "file:../../utils/request",
-    "@icya-cli/utils": "file:../../utils/utils",
+    "@icya-cli/command": "^2.0.0",
+    "@icya-cli/log": "^2.0.0",
+    "@icya-cli/package": "^2.0.0",
+    "@icya-cli/request": "^2.0.0",
+    "@icya-cli/utils": "^2.0.0",
     "ejs": "^3.1.6",
     "fs-extra": "^10.0.0",
     "glob": "^7.1.7",
     "inquirer": "^8.1.2",
     "kebab-case": "^1.0.1",
     "semver": "^7.3.5"
-  }
+  },
+  "gitHead": "e4166981b4a9093c0b62016387076dd513d9335f"
 }
