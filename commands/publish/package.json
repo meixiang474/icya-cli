@@ -1,6 +1,6 @@
 {
   "name": "@icya-cli/publish",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "> TODO: description",
   "author": "meixiang474 <1436098850@qq.com>",
   "homepage": "https://github.com/meixiang474/icya-cli#readme",
@@ -24,8 +24,8 @@
     "url": "https://github.com/meixiang474/icya-cli/issues"
   },
   "dependencies": {
-    "@icya-cli/command": "^2.0.0",
-    "@icya-cli/log": "^2.0.0",
+    "@icya-cli/command": "^2.0.1",
+    "@icya-cli/log": "^2.0.1",
     "fs-extra": "^10.1.0"
   },
   "gitHead": "e4166981b4a9093c0b62016387076dd513d9335f"

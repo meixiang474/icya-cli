@@ -1,6 +1,6 @@
 {
   "name": "@icya-cli/exec",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "icya-cli exec",
   "author": "meixiang474 <1436098850@qq.com>",
   "homepage": "https://github.com/meixiang474/icya-cli#readme",
@@ -27,9 +27,9 @@
     "url": "https://github.com/meixiang474/icya-cli/issues"
   },
   "dependencies": {
-    "@icya-cli/log": "^2.0.0",
-    "@icya-cli/package": "^2.0.0",
-    "@icya-cli/utils": "^2.0.0"
+    "@icya-cli/log": "^2.0.1",
+    "@icya-cli/package": "^2.0.1",
+    "@icya-cli/utils": "^2.0.1"
   },
   "gitHead": "e4166981b4a9093c0b62016387076dd513d9335f"
 }
