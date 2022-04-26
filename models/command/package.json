@@ -1,6 +1,6 @@
 {
   "name": "@icya-cli/command",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "icya-cli command",
   "author": "meixiang474 <1436098850@qq.com>",
   "homepage": "https://github.com/meixiang474/icya-cli#readme",
@@ -27,7 +27,7 @@
     "url": "https://github.com/meixiang474/icya-cli/issues"
   },
   "dependencies": {
-    "@icya-cli/log": "^2.0.1",
+    "@icya-cli/log": "^2.0.2",
     "colors": "^1.4.0",
     "semver": "^7.3.5"
   },
