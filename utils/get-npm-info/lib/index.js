@@ -71,7 +71,8 @@ async function getNpmLatestVersion(npmName, registry) {
   let versions = await getNpmVersions(npmName, registry);
   // 将versions 从新到旧排序
   if (versions) {
-    return versions.sort((a, b) => semver.gt(b, a))[0];
+    versions.sort((a, b) => (semver.gt(a, b) ? -1 : 0));
+    return versions[0];
   }
   return null;
 }
