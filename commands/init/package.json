@@ -1,6 +1,6 @@
 {
   "name": "@icya-cli/init",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "icya-cli init",
   "author": "meixiang474 <1436098850@qq.com>",
   "homepage": "https://github.com/meixiang474/icya-cli#readme",
@@ -29,7 +29,7 @@
   "dependencies": {
     "@icya-cli/command": "^2.0.4",
     "@icya-cli/log": "^2.0.4",
-    "@icya-cli/package": "^2.0.4",
+    "@icya-cli/package": "^2.0.5",
     "@icya-cli/request": "^2.0.4",
     "@icya-cli/utils": "^2.0.4",
     "ejs": "^3.1.6",
