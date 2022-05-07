@@ -1,6 +1,6 @@
 {
   "name": "@icya-cli/package",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "icya-cli package",
   "author": "meixiang474 <1436098850@qq.com>",
   "homepage": "https://github.com/meixiang474/icya-cli#readme",
@@ -27,9 +27,9 @@
     "url": "https://github.com/meixiang474/icya-cli/issues"
   },
   "dependencies": {
-    "@icya-cli/format-path": "^2.0.2",
-    "@icya-cli/get-npm-info": "^2.0.3",
-    "@icya-cli/utils": "^2.0.3",
+    "@icya-cli/format-path": "^2.0.4",
+    "@icya-cli/get-npm-info": "^2.0.4",
+    "@icya-cli/utils": "^2.0.4",
     "fs-extra": "^10.0.0",
     "npminstall": "^4.11.0",
     "path-exists": "^4.0.0",
