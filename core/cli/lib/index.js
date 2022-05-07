@@ -38,7 +38,7 @@ function registerCommand() {
   program
     .name(Object.keys(pkg.bin)[0])
     .usage("<command> [options]")
-    .version(pkg.version)
+    .version(pkg.version, "-V, --version")
     .option("-d, --debug", "是否开启调试模式", false)
     .option("-tp, --targetPath <targetPath>", "是否指定本地文件路径", "");
 
@@ -46,9 +46,10 @@ function registerCommand() {
   program
     .command("init [projectName]")
     .option("-f --force", "是否强制初始化项目", false)
+    .description("初始化项目")
     .action(exec);
 
-  program.command("publish").action(exec);
+  program.command("publish").description("发布项目").action(exec);
 
   // 是否开启调试模式
   program.on("option:debug", () => {

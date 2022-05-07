@@ -1,5 +1,7 @@
 "use strict";
 
+const fs = require("fs");
+
 // 判断是否是对象类型
 function isObject(o) {
   return Object.prototype.toString.call(o) === "[object Object]";
@@ -43,10 +45,26 @@ function execAsync(command, args, options) {
   });
 }
 
+// 读取文件返回文件内容
+function readFile(path, options = {}) {
+  if (fs.existsSync(path)) {
+    const buffer = fs.readFileSync(path);
+    if (buffer) {
+      if (options.toJson) {
+        return buffer.toJSON();
+      } else {
+        return buffer.toString();
+      }
+    }
+  }
+  return null;
+}
+
 module.exports = {
   isObject,
   spinnerStart,
   sleep,
   exec,
   execAsync,
+  readFile,
 };

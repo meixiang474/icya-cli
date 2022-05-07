@@ -2,21 +2,30 @@
 
 const path = require("path");
 const fs = require("fs");
+const fse = require("fs-extra");
 const Command = require("@icya-cli/command");
 const log = require("@icya-cli/log");
+const Git = require("@icya-cli/git");
 
 class PublishCommand extends Command {
   init() {
     // 处理参数
-    console.log("init", this._argv);
+    log.verbose("init", this._argv);
   }
   async exec() {
     try {
       // 开始时间
       const startTime = new Date().getTime();
+
       // 1. 初始化检查
       this.prepare();
+
       // 2. Git Flow自动化
+      // 初始化git实例
+      const git = new Git(this.projectInfo);
+      // 代码仓库初始化和自动化提交准备工作
+      git.prepare();
+
       // 3. 云构建和云发布
       // 结束时间
       const endTime = new Date().getTime();
@@ -40,6 +49,20 @@ class PublishCommand extends Command {
       throw new Error("package.json不存在！");
     }
     // 2. 确认是否包含build命令 name, version等信息
+    const pkg = fse.readJsonSync(pkgPath);
+    const { name, version, scripts } = pkg;
+    log.verbose("package.json", name, version, scripts);
+    if (!name || !version || !scripts || !scripts.build) {
+      throw new Error(
+        "package.json信息不全，请检查是否存在name、version和scripts是否存在（scripts需要提供build命令）"
+      );
+    }
+    // 检查通过则创建projectInfo
+    this.projectInfo = {
+      name,
+      version,
+      dir: projectPath,
+    };
   }
 }
 
