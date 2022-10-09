@@ -11,6 +11,12 @@ class PublishCommand extends Command {
   init() {
     // 处理参数
     log.verbose("init", this._argv);
+    this.options = {
+      // 是否强制更新远程仓库类型
+      refreshServer: this._cmd.refreshServer,
+      // 是否强制更新远程仓库Token
+      refreshToken: this._cmd.refreshToken,
+    };
   }
   async exec() {
     try {
@@ -22,9 +28,9 @@ class PublishCommand extends Command {
 
       // 2. Git Flow自动化
       // 初始化git实例
-      const git = new Git(this.projectInfo);
+      const git = new Git(this.projectInfo, this.options);
       // 代码仓库初始化和自动化提交准备工作
-      git.prepare();
+      await git.prepare();
 
       // 3. 云构建和云发布
       // 结束时间

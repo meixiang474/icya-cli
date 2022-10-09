@@ -60,6 +60,20 @@ function readFile(path, options = {}) {
   return null;
 }
 
+function writeFile(path, data, { rewrite = true } = {}) {
+  if (fs.existsSync(path)) {
+    // 是否覆盖文件
+    if (rewrite) {
+      fs.writeFileSync(path, data);
+      return true;
+    }
+    return false;
+  } else {
+    fs.writeFileSync(path, data);
+    return true;
+  }
+}
+
 module.exports = {
   isObject,
   spinnerStart,
@@ -67,4 +81,5 @@ module.exports = {
   exec,
   execAsync,
   readFile,
+  writeFile,
 };

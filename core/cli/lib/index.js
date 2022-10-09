@@ -49,7 +49,12 @@ function registerCommand() {
     .description("初始化项目")
     .action(exec);
 
-  program.command("publish").description("发布项目").action(exec);
+  program
+    .command("publish")
+    .option("-rs --refreshServer", "强制更新远程Git仓库", false)
+    .option("-rt --refreshToken", "强制更新远程Git仓库Token", false)
+    .description("发布项目")
+    .action(exec);
 
   // 是否开启调试模式
   program.on("option:debug", () => {

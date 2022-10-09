@@ -420,6 +420,7 @@ class InitCommand extends Command {
         },
         filter(v) {
           // semver不合法时会返回null, 所以先做一次判断
+          // 此处可以直接返回v，因为validate已经做过验证
           if (semver.valid(v)) {
             return semver.valid(v);
           } else {
