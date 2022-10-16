@@ -1,6 +1,6 @@
 {
   "name": "@icya-cli/git",
-  "version": "2.0.4",
+  "version": "2.0.6",
   "description": "> TODO: description",
   "author": "meixiang474 <1436098850@qq.com>",
   "homepage": "https://github.com/meixiang474/icya-cli#readme",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@icya-cli/log": "^2.0.4",
-    "@icya-cli/utils": "^2.0.4",
+    "@icya-cli/utils": "^2.0.6",
     "fs-extra": "^10.1.0",
     "inquirer": "^8.2.4",
     "simple-git": "^3.7.1",
