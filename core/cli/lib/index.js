@@ -50,6 +50,12 @@ function registerCommand() {
     .action(exec);
 
   program
+    .command("add [templateName]")
+    .option("-f --force", "是否强制添加代码", false)
+    .description("复用代码")
+    .action(exec);
+
+  program
     .command("publish")
     .option("-rs --refreshServer", "强制更新远程Git仓库", false)
     .option("-rt --refreshToken", "强制更新远程Git仓库Token", false)

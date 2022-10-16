@@ -33,7 +33,7 @@ function getNpmInfo(npmName, registry) {
 function getDefaultRegistry(isOriginal = false) {
   return isOriginal
     ? "https://registry.npmjs.org"
-    : "https://registry.npm.taobao.org";
+    : "https://registry.npmmirror.com";
 }
 
 // 获取包的所有版本号
@@ -53,7 +53,7 @@ function getNpmSemverVersions(baseVersion, versions) {
     .filter((version) => {
       return semver.satisfies(version, `^${baseVersion}`);
     })
-    .sort((a, b) => semver.gt(b, a));
+    .sort((a, b) => (semver.gt(b, a) ? 1 : -1));
 }
 
 // 获取包的最新版本(相对于某个包)
@@ -71,7 +71,7 @@ async function getNpmLatestVersion(npmName, registry) {
   let versions = await getNpmVersions(npmName, registry);
   // 将versions 从新到旧排序
   if (versions) {
-    versions.sort((a, b) => (semver.gt(a, b) ? -1 : 0));
+    versions.sort((a, b) => (semver.gt(a, b) ? -1 : 1));
     return versions[0];
   }
   return null;

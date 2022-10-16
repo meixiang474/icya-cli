@@ -8,7 +8,8 @@ const { exec: spawn } = require("@icya-cli/utils");
 // 命令 -> 包 映射表
 const SETTINGS = {
   init: "@icya-cli/init",
-  publish: "@icy-cli/publish",
+  publish: "@icya-cli/publish",
+  add: "@icya-cli/add",
 };
 
 // 远程包的缓存文件夹

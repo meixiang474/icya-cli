@@ -34,6 +34,7 @@ class Command {
       // 监听所有异常
       chain.catch((e) => {
         log.error(e.message);
+        reject(e);
       });
     });
     log.verbose("runner", runner);
