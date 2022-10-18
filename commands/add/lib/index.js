@@ -3,6 +3,7 @@
 const path = require("path");
 const inquirer = require("inquirer");
 const pathExists = require("path-exists");
+const { sync: pkgUpSync } = require("pkg-up");
 const fse = require("fs-extra");
 const glob = require("glob");
 const ejs = require("ejs");
@@ -10,14 +11,15 @@ const userHome = require("user-home");
 const Command = require("@icya-cli/command");
 const log = require("@icya-cli/log");
 const Package = require("@icya-cli/package");
-const { sleep, spinnerStart } = require("@icya-cli/utils");
+const { sleep, spinnerStart, execAsync } = require("@icya-cli/utils");
 
 const PAGE_TEMPLATE = [
   {
     name: "Vue2首页模板",
     npmName: "@icya-cli/template-page-vue2",
-    version: "1.0.0",
+    version: "latest",
     targetPath: "src/views/Home",
+    ignore: ["assets/**"],
   },
 ];
 
@@ -52,6 +54,7 @@ class AddCommand extends Command {
   }
 
   async installTemplate() {
+    log.info("正在安装页面模板...");
     log.verbose("pageTemplate", this.pageTemplate);
     // 模板路径
     const templatePath = path.resolve(
@@ -69,19 +72,25 @@ class AddCommand extends Command {
     fse.ensureDirSync(templatePath);
     fse.ensureDirSync(targetPath);
     fse.copySync(templatePath, targetPath);
+    // ejs模板渲染
     await this.ejsRender({
       targetPath,
     });
+    // 合并模板的依赖
+    await this.dependenciesMerge({ templatePath, targetPath });
+    log.success("安装页面模板成功");
   }
 
   async ejsRender(options) {
     const { targetPath } = options;
+    const { ignore } = this.pageTemplate;
     return new Promise((resolve, reject) => {
       glob(
         "**",
         {
           cwd: targetPath,
           nodir: true,
+          ignore: ignore || "",
         },
         (err, files) => {
           log.verbose("files", files);
@@ -97,7 +106,7 @@ class AddCommand extends Command {
                   ejs.renderFile(
                     filePath,
                     {
-                      name: this.pageTemplate.pageName,
+                      name: this.pageTemplate.pageName.toLocaleLowerCase(),
                     },
                     {},
                     (err, result) => {
@@ -119,6 +128,91 @@ class AddCommand extends Command {
         }
       );
     });
+  }
+
+  async execCommand(command, cwd) {
+    let res;
+    if (command) {
+      // npm install => [npm, install]
+      const cmdArray = command.split(" ");
+      const cmd = cmdArray[0];
+      const args = cmdArray.slice(1);
+      res = await execAsync(cmd, args, {
+        stdio: "inherit",
+        cwd,
+      });
+      // 感觉失败也不会走到这里来
+      if (res !== 0) {
+        throw new Error(command + "命令执行失败");
+      }
+      return res;
+    }
+  }
+
+  async dependenciesMerge(options) {
+    const objToArray = (o) => {
+      const arr = [];
+      Object.keys(o).forEach((key) => {
+        arr.push({
+          key,
+          value: o[key],
+        });
+      });
+      return arr;
+    };
+    const arrayToObj = (arr) => {
+      const o = {};
+      arr.forEach((item) => {
+        o[item.key] = item.value;
+      });
+      return o;
+    };
+    const depDiff = (templateDepArr, targetDepArr) => {
+      const finalDep = [...targetDepArr];
+      // 1. 模板中存在依赖 但是项目中没有(拷贝依赖)
+      // 2. 模板中存在依赖 项目中也存在(不会拷贝依赖，但是会在脚手架中提示)
+      templateDepArr.forEach((templateDep) => {
+        const duplicateDep = targetDepArr.find(
+          (targetDep) => templateDep.key === targetDep.key
+        );
+        if (duplicateDep) {
+          log.verbose("查询到重复依赖", duplicateDep);
+          if (templateDep.value !== duplicateDep.value) {
+            log.warn(
+              `${templateDep.key}冲突，${templateDep.value} => ${duplicateDep.value}`
+            );
+            // todo 5.9 6:27
+          }
+        } else {
+          log.verbose("查询到新依赖", templateDep);
+          finalDep.push(templateDep);
+        }
+      });
+      return finalDep;
+    };
+    // 处理依赖合并问题
+    // 1. 获取package.json
+    const { templatePath, targetPath } = options;
+    const templatePkgPath = pkgUpSync({ cwd: templatePath });
+    const targetPkgPath = pkgUpSync({ cwd: targetPath });
+    const templatePkg = fse.readJSONSync(templatePkgPath);
+    const targetPkg = fse.readJSONSync(targetPkgPath);
+    // 2. 获取dependencies
+    const templateDependencies = templatePkg.dependencies || {};
+    const targetDependencies = targetPkg.dependencies || {};
+    // 3. 将对象转换成数组
+    const templateDepArr = objToArray(templateDependencies);
+    const targetDepArr = objToArray(targetDependencies);
+    //  4. diff算法
+    const newDep = depDiff(templateDepArr, targetDepArr);
+    targetPkg.dependencies = arrayToObj(newDep);
+    fse.writeJSONSync(targetPkgPath, targetPkg, {
+      spaces: 2,
+    });
+    // 5. 自动安装依赖
+    log.info("正在安装页面模板的依赖");
+    await this.execCommand("npm install", path.dirname(targetPkgPath));
+    log.success("安装页面模板依赖成功");
   }
 
   async downloadTemplate() {
