@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "prettier --write ./core/**/*.js ./models/**/*.js ./utils/**/*.js ./commands/**/*.js",
-    "commitlint": "commitlint -e"
+    "commitlint": "commitlint -e",
+    "prepare": "simple-git-hooks"
   },
   "keywords": [],
   "author": "",
