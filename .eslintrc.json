@@ -8,7 +8,7 @@
     "node": true
   },
   "rules": {
-    "indent": ["error", 2],
+    "indent": "off",
     "no-eq-null": "off",
     "eqeqeq": "off",
     "strict": "off"
