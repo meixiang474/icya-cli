@@ -63,7 +63,8 @@ class AddCommand extends Command {
     await this.prepare(ADD_MODE_SECTION);
     // 3.2 下载代码片段
     await this.downloadTemplate(ADD_MODE_SECTION);
-    // todo 3-1 0:0
+    // 3.3 代码片断安装
+    await this.installSection();
   }
 
   async installPageTemplate() {
@@ -112,6 +113,33 @@ class AddCommand extends Command {
     if (await pathExists(this.targetPath)) {
       throw new Error("页面文件夹已经存在");
     }
+  }
+
+  async installSection() {
+    // 1. 需要用户插入的行数
+    const { lineNumber } = await inquirer.prompt({
+      type: "input",
+      message: "请输入要插入的行数：",
+      name: "lineNumber",
+      validate(value) {
+        const done = this.async();
+        if (!value || !value.trim()) {
+          done("插入的行数不能为空");
+          return;
+        }
+        if (
+          parseFloat(value) < 0 ||
+          Math.floor(parseFloat(value)) !== parseFloat(value)
+        ) {
+          done("请输入有效的行数");
+          return;
+        }
+        done(null, true);
+      },
+    });
+    console.log(lineNumber);
+    // 2. 对源码文件进行分割
+    // todo 3-2
   }
 
   async installTemplate() {
