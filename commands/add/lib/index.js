@@ -1,6 +1,7 @@
 "use strict";
 
 const path = require("path");
+const fs = require("fs");
 const inquirer = require("inquirer");
 const pathExists = require("path-exists");
 const { sync: pkgUpSync } = require("pkg-up");
@@ -116,7 +117,22 @@ class AddCommand extends Command {
   }
 
   async installSection() {
-    // 1. 需要用户插入的行数
+    // 1. 选择要插入的源码文件
+    let files = fs.readdirSync(this.dir, { withFileTypes: true });
+    files = files
+      .map((file) => (file.isFile() ? file.name : null))
+      .filter((v) => v)
+      .map((file) => ({ name: file, value: file }));
+    if (files.length === 0) {
+      throw new Error("当前文件夹下没有文件！");
+    }
+    const { codeFile } = await inquirer.prompt({
+      type: "list",
+      message: "请选择要插入代码片段的源码文件",
+      name: "codeFile",
+      choices: files,
+    });
+    // 2. 需要用户插入的行数
     const { lineNumber } = await inquirer.prompt({
       type: "input",
       message: "请输入要插入的行数：",
@@ -137,9 +153,43 @@ class AddCommand extends Command {
         done(null, true);
       },
     });
-    console.log(lineNumber);
-    // 2. 对源码文件进行分割
-    // todo 3-2
+    log.verbose("codeFile", codeFile);
+    log.verbose("lineNumber", lineNumber);
+    // 3. 对源码文件进行分割成数组
+    const codeFilePath = path.resolve(this.dir, codeFile);
+    const codeContent = fs.readFileSync(codeFilePath, "utf-8");
+    const codeContentArr = codeContent.split("\n");
+    // 4. 以组件形式插入代码片段
+    const componentName = this.sectionTemplate.sectionName.toLowerCase();
+    const componentNameOriginal = this.sectionTemplate.sectionName;
+    codeContentArr.splice(
+      lineNumber,
+      0,
+      `<${componentName}></${componentName}>`
+    );
+    // 5. 插入代码片段的import语句
+    const scriptIndex = codeContentArr.findIndex(
+      (code) => code.trim() === "<script>"
+    );
+    codeContentArr.splice(
+      scriptIndex + 1,
+      0,
+      `import ${componentNameOriginal} from './components/${componentNameOriginal}/index.vue'`
+    );
+    log.verbose("codeContentArr", codeContentArr);
+    // 6. 将代码还原为string
+    const newCodeContent = codeContentArr.join("\n");
+    fs.writeFileSync(codeFilePath, newCodeContent, "utf-8");
+    log.success("代码片段写入成功");
+    // 7. 创建代码片段组件目录
+    fse.ensureDirSync(this.targetPath);
+    const templatePath = path.resolve(
+      this.sectionTemplatePackage.cacheFilePath,
+      "template"
+    );
+    const targetPath = this.targetPath;
+    fse.copySync(templatePath, targetPath);
+    //  todo 4-1
   }
 
   async installTemplate() {
