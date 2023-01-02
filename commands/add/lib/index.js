@@ -189,7 +189,6 @@ class AddCommand extends Command {
     );
     const targetPath = this.targetPath;
     fse.copySync(templatePath, targetPath);
-    //  todo 4-1
   }
 
   async installTemplate() {
