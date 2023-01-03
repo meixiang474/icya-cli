@@ -31,6 +31,12 @@ const SECTION_TEMPLATE = [
     npmName: "@icya-cli/template-section-vue",
     version: "latest",
   },
+  {
+    name: "Vue2代码片段2",
+    npmName: "@icya-cli/template-section-vue-template",
+    version: "latest",
+    targetPath: "src",
+  },
 ];
 
 const ADD_MODE_SECTION = "section";
@@ -185,7 +191,8 @@ class AddCommand extends Command {
     fse.ensureDirSync(this.targetPath);
     const templatePath = path.resolve(
       this.sectionTemplatePackage.cacheFilePath,
-      "template"
+      "template",
+      this.sectionTemplate.targetPath || ""
     );
     const targetPath = this.targetPath;
     fse.copySync(templatePath, targetPath);
