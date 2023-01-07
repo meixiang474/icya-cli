@@ -11,36 +11,16 @@ const ejs = require("ejs");
 const semver = require("semver");
 const userHome = require("user-home");
 const Command = require("@icya-cli/command");
+const request = require("@icya-cli/request");
 const log = require("@icya-cli/log");
 const Package = require("@icya-cli/package");
 const { sleep, spinnerStart, execAsync } = require("@icya-cli/utils");
 
-const PAGE_TEMPLATE = [
-  {
-    name: "Vue2首页模板",
-    npmName: "@icya-cli/template-page-vue2",
-    version: "latest",
-    targetPath: "src/views/Home",
-    ignore: ["assets/**"],
-  },
-];
-
-const SECTION_TEMPLATE = [
-  {
-    name: "Vue2代码片段",
-    npmName: "@icya-cli/template-section-vue",
-    version: "latest",
-  },
-  {
-    name: "Vue2代码片段2",
-    npmName: "@icya-cli/template-section-vue-template",
-    version: "latest",
-    targetPath: "src",
-  },
-];
-
 const ADD_MODE_SECTION = "section";
 const ADD_MODE_PAGE = "page";
+
+const TYPE_CUSTOM = "custom";
+// const TYPE_NORMAL = "normal";
 
 process.on("unhandledRejection", (e) => {});
 
@@ -58,6 +38,20 @@ class AddCommand extends Command {
       // 安装页面模板
       await this.installPageTemplate();
     }
+  }
+
+  getPageTemplate() {
+    return request({
+      url: "/page/template",
+      method: "get",
+    });
+  }
+
+  getSectionTemplate() {
+    return request({
+      url: "/section/template",
+      method: "get",
+    });
   }
 
   async installSectionTemplate() {
@@ -216,6 +210,35 @@ class AddCommand extends Command {
     log.verbose("targetPath", targetPath);
     fse.ensureDirSync(templatePath);
     fse.ensureDirSync(targetPath);
+    if (this.pageTemplate.type === TYPE_CUSTOM) {
+      await this.installCustomPageTemplate({ templatePath, targetPath });
+    } else {
+      await this.installNormalPageTemplate({ templatePath, targetPath });
+    }
+  }
+
+  async installCustomPageTemplate({ templatePath, targetPath }) {
+    // 1. 获取自定义模板的入口文件
+    const rootFile = this.pageTemplatePackage.getRootFilePath();
+    if (fs.existsSync(rootFile)) {
+      log.notice("开始执行自定义模板");
+      const options = {
+        templatePath,
+        targetPath,
+        pageTemplate: this.pageTemplate,
+      };
+      const code = `require('${rootFile}')(${JSON.stringify(options)})`;
+      await execAsync("node", ["-e", code], {
+        stdio: "inherit",
+        cwd: process.cwd(),
+      });
+      log.success("自定义模板安装成功");
+    } else {
+      throw new Error("自定义模板入口文件不存在");
+    }
+  }
+
+  async installNormalPageTemplate({ templatePath, targetPath }) {
     fse.copySync(templatePath, targetPath);
     // ejs模板渲染
     await this.ejsRender({
@@ -419,8 +442,18 @@ class AddCommand extends Command {
 
   async getTemplate(addMode = ADD_MODE_PAGE) {
     const name = addMode === ADD_MODE_PAGE ? "页面" : "代码片段";
+    // 通过 API 获取页面模板列表
+    if (addMode === ADD_MODE_PAGE) {
+      const pageTemplateData = await this.getPageTemplate();
+      this.pageTemplateData = pageTemplateData;
+    } else {
+      const sectionTemplateData = await this.getSectionTemplate();
+      this.sectionTemplateData = sectionTemplateData;
+    }
     const TEMPLATE =
-      addMode === ADD_MODE_PAGE ? PAGE_TEMPLATE : SECTION_TEMPLATE;
+      addMode === ADD_MODE_PAGE
+        ? this.pageTemplateData
+        : this.sectionTemplateData;
     const { pageTemplate: pageTemplateName } = await inquirer.prompt({
       type: "list",
       name: "pageTemplate",
@@ -455,11 +488,11 @@ class AddCommand extends Command {
 
   createChoices(addMode) {
     return addMode === ADD_MODE_PAGE
-      ? PAGE_TEMPLATE.map((item) => ({
+      ? this.pageTemplateData.map((item) => ({
           name: item.name,
           value: item.npmName,
         }))
-      : SECTION_TEMPLATE.map((item) => ({
+      : this.sectionTemplateData.map((item) => ({
           name: item.name,
           value: item.npmName,
         }));

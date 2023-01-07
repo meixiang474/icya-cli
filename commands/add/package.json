@@ -30,6 +30,7 @@
     "@icya-cli/command": "^2.0.8",
     "@icya-cli/log": "^2.0.8",
     "@icya-cli/package": "^2.0.8",
+    "@icya-cli/request": "^2.0.8",
     "@icya-cli/utils": "^2.0.8",
     "ejs": "^3.1.8",
     "fs-extra": "^10.1.0",
